@@ -119,6 +119,18 @@ function clearTriangle() {
     }
 }
 
+// Функция для вывода отладочных сообщений
+function debugLog(message) {
+    const debugDiv = document.getElementById('debugMessages');
+    if (debugDiv) {
+        const messageElement = document.createElement('div');
+        messageElement.textContent = message;
+        debugDiv.appendChild(messageElement);
+        debugDiv.scrollTop = debugDiv.scrollHeight;
+    }
+    console.log(message); // Также выводим в консоль для удобства
+}
+
 // Функция для создания отрезка по введенным координатам
 window.createLineFromInputs = function () {
     // Очищаем только линию, если она есть
@@ -145,6 +157,7 @@ window.createLineFromInputs = function () {
 
 // Функция для создания треугольника по введенным координатам
 window.createPlaneFromInputs = function () {
+    debugLog('createPlaneFromInputs started');
     // Очищаем только треугольник, если он есть
     clearTriangle();
 
@@ -167,12 +180,15 @@ window.createPlaneFromInputs = function () {
     // Создаем треугольник
     currentTriangle = createTriangle(point1, point2, point3);
 
+    debugLog('Calling disableTriangleInputs');
     // Отключаем ввод для треугольника
     disableTriangleInputs();
+    debugLog('disableTriangleInputs finished');
 };
 
 // Функции для управления состоянием элементов интерфейса
 function disableLineInputs() {
+    debugLog('disableLineInputs started');
     const lineInputs = ['line_x1', 'line_y1', 'line_z1', 'line_x2', 'line_y2', 'line_z2'];
     lineInputs.forEach(id => {
         const input = document.getElementById(id);
@@ -181,11 +197,16 @@ function disableLineInputs() {
             input.style.backgroundColor = '#f0f0f0';
         }
     });
-    document.querySelector('button[onclick="createLineFromInputs()"]').disabled = true;
-    document.querySelector('button[onclick="createLineFromInputs()"]').style.backgroundColor = '#cccccc';
+    const button = document.querySelector('button[onclick="createLineFromInputs()"]');
+    debugLog('Line button found: ' + (button ? 'yes' : 'no'));
+    if (button) {
+        button.disabled = true;
+        button.style.backgroundColor = '#cccccc';
+    }
 }
 
 function disableTriangleInputs() {
+    debugLog('disableTriangleInputs started');
     const triangleInputs = ['plane_x1', 'plane_y1', 'plane_z1', 'plane_x2', 'plane_y2', 'plane_z2', 'plane_x3', 'plane_y3', 'plane_z3'];
     triangleInputs.forEach(id => {
         const input = document.getElementById(id);
@@ -194,8 +215,12 @@ function disableTriangleInputs() {
             input.style.backgroundColor = '#f0f0f0';
         }
     });
-    document.querySelector('button[onclick="createPlaneFromInputs()"]').disabled = true;
-    document.querySelector('button[onclick="createPlaneFromInputs()"]').style.backgroundColor = '#cccccc';
+    const button = document.querySelector('button[onclick="createPlaneFromInputs()"]');
+    debugLog('Triangle button found: ' + (button ? 'yes' : 'no'));
+    if (button) {
+        button.disabled = true;
+        button.style.backgroundColor = '#cccccc';
+    }
 }
 
 function enableAllInputs() {
