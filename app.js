@@ -98,10 +98,31 @@ function createTriangle(point1, point2, point3) {
     return [line1, line2, line3, polygon];
 }
 
+// Функция для очистки только линии
+function clearLine() {
+    if (currentLine) {
+        currentLine.dispose();
+        currentLine = null;
+    }
+}
+
+// Функция для очистки только треугольника
+function clearTriangle() {
+    if (currentTriangle) {
+        currentTriangle.forEach(mesh => {
+            if (mesh.material) {
+                mesh.material.dispose();
+            }
+            mesh.dispose();
+        });
+        currentTriangle = null;
+    }
+}
+
 // Функция для создания отрезка по введенным координатам
 window.createLineFromInputs = function () {
-    // Очищаем предыдущие объекты
-    clearScene();
+    // Очищаем только линию, если она есть
+    clearLine();
 
     // Получаем значения координат
     const x1 = parseFloat(document.getElementById("line_x1").value) || 0;
@@ -117,12 +138,15 @@ window.createLineFromInputs = function () {
 
     // Создаем линию
     currentLine = createLine(point1, point2);
+
+    // Отключаем ввод для линии
+    disableLineInputs();
 };
 
 // Функция для создания треугольника по введенным координатам
 window.createPlaneFromInputs = function () {
-    // Очищаем предыдущие объекты
-    clearScene();
+    // Очищаем только треугольник, если он есть
+    clearTriangle();
 
     // Получаем значения координат
     const x1 = parseFloat(document.getElementById("plane_x1").value) || 0;
@@ -142,7 +166,57 @@ window.createPlaneFromInputs = function () {
 
     // Создаем треугольник
     currentTriangle = createTriangle(point1, point2, point3);
+
+    // Отключаем ввод для треугольника
+    disableTriangleInputs();
 };
+
+// Функции для управления состоянием элементов интерфейса
+function disableLineInputs() {
+    const lineInputs = ['line_x1', 'line_y1', 'line_z1', 'line_x2', 'line_y2', 'line_z2'];
+    lineInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.disabled = true;
+            input.style.backgroundColor = '#f0f0f0';
+        }
+    });
+    document.querySelector('button[onclick="createLineFromInputs()"]').disabled = true;
+    document.querySelector('button[onclick="createLineFromInputs()"]').style.backgroundColor = '#cccccc';
+}
+
+function disableTriangleInputs() {
+    const triangleInputs = ['plane_x1', 'plane_y1', 'plane_z1', 'plane_x2', 'plane_y2', 'plane_z2', 'plane_x3', 'plane_y3', 'plane_z3'];
+    triangleInputs.forEach(id => {
+        const input = document.getElementById(id);
+        if (input) {
+            input.disabled = true;
+            input.style.backgroundColor = '#f0f0f0';
+        }
+    });
+    document.querySelector('button[onclick="createPlaneFromInputs()"]').disabled = true;
+    document.querySelector('button[onclick="createPlaneFromInputs()"]').style.backgroundColor = '#cccccc';
+}
+
+function enableAllInputs() {
+    const allInputs = document.querySelectorAll('input[type="number"]');
+    allInputs.forEach(input => {
+        input.disabled = false;
+        input.style.backgroundColor = 'white';
+    });
+
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+        if (button.id !== 'clearButton') {
+            button.disabled = false;
+            if (button.onclick.toString().includes('createLineFromInputs')) {
+                button.style.backgroundColor = '#4CAF50';
+            } else if (button.onclick.toString().includes('createPlaneFromInputs')) {
+                button.style.backgroundColor = '#4CAF50';
+            }
+        }
+    });
+}
 
 // Функция для очистки всех объектов в сцене
 window.clearScene = function () {
@@ -180,6 +254,9 @@ window.clearScene = function () {
         point.dispose();
     });
     currentPoints = [];
+
+    // Включаем все поля ввода
+    enableAllInputs();
 };
 
 // Запускаем рендер
