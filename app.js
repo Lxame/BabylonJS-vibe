@@ -1,3 +1,8 @@
+import { createAxes } from './utils/axes.js';
+import { createPoint, createLine, createTriangle, clearLine, clearTriangle } from './utils/geometry.js';
+import { debugLog } from './utils/debug.js';
+import { disableLineInputs, disableTriangleInputs, enableAllInputs } from './utils/ui.js';
+
 const canvas = document.getElementById("renderCanvas");
 const engine = new BABYLON.Engine(canvas, true);
 const scene = new BABYLON.Scene(engine);
@@ -10,142 +15,19 @@ camera.attachControl(canvas, true);
 const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
 light.intensity = 0.7;
 
-// Функция для создания координатных осей
-function createAxes() {
-    const axisLength = 1;
-
-    // Создаем оси
-    const xAxis = BABYLON.MeshBuilder.CreateLines("xAxis", {
-        points: [
-            BABYLON.Vector3.Zero(),
-            new BABYLON.Vector3(axisLength, 0, 0)
-        ],
-        colors: [new BABYLON.Color4(1, 0, 0, 1), new BABYLON.Color4(1, 0, 0, 1)]
-    }, scene);
-
-    const yAxis = BABYLON.MeshBuilder.CreateLines("yAxis", {
-        points: [
-            BABYLON.Vector3.Zero(),
-            new BABYLON.Vector3(0, axisLength, 0)
-        ],
-        colors: [new BABYLON.Color4(0, 1, 0, 1), new BABYLON.Color4(0, 1, 0, 1)]
-    }, scene);
-
-    const zAxis = BABYLON.MeshBuilder.CreateLines("zAxis", {
-        points: [
-            BABYLON.Vector3.Zero(),
-            new BABYLON.Vector3(0, 0, axisLength)
-        ],
-        colors: [new BABYLON.Color4(0, 0, 1, 1), new BABYLON.Color4(0, 0, 1, 1)]
-    }, scene);
-}
-
 // Создаем координатные оси
-createAxes();
+createAxes(scene);
 
 // Переменные для хранения текущей линии и треугольника
 let currentLine = null;
 let currentTriangle = null;
 let currentPoints = [];
-let allLines = []; // Добавляем массив для хранения всех линий
-
-// Функция для создания точки
-function createPoint(position) {
-    const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-        diameter: 0.2,
-        segments: 16
-    }, scene);
-    sphere.position = position;
-    currentPoints.push(sphere);
-    return sphere;
-}
-
-// Функция для создания линии между двумя точками
-function createLine(point1, point2) {
-    const points = [point1.position, point2.position];
-    const lines = BABYLON.MeshBuilder.CreateLines("lines", {
-        points: points,
-        updatable: true
-    }, scene);
-    allLines.push(lines); // Добавляем линию в массив
-    return lines;
-}
-
-// Функция для создания треугольника по трем точкам
-function createTriangle(point1, point2, point3) {
-    try {
-        // Создаем линии треугольника
-        const line1 = createLine(point1, point2);
-        const line2 = createLine(point2, point3);
-        const line3 = createLine(point3, point1);
-
-        // Создаем треугольник с помощью CreateMesh
-        const vertices = [
-            point1.position.x, point1.position.y, point1.position.z,
-            point2.position.x, point2.position.y, point2.position.z,
-            point3.position.x, point3.position.y, point3.position.z
-        ];
-
-        const indices = [0, 1, 2];
-
-        const vertexData = new BABYLON.VertexData();
-        vertexData.positions = vertices;
-        vertexData.indices = indices;
-
-        const polygon = new BABYLON.Mesh("triangle", scene);
-        vertexData.applyToMesh(polygon);
-        polygon.convertToUnIndexedMesh();
-
-        // Создаем материал для треугольника
-        const material = new BABYLON.StandardMaterial("triangleMaterial", scene);
-        material.diffuseColor = new BABYLON.Color3(0.5, 0.8, 1.0); // Голубой цвет
-        material.alpha = 0.5; // Полупрозрачность
-        material.backFaceCulling = false;
-        polygon.material = material;
-
-        return [line1, line2, line3, polygon];
-    } catch (error) {
-        throw error; // Пробрасываем ошибку дальше
-    }
-}
-
-// Функция для очистки только линии
-function clearLine() {
-    if (currentLine) {
-        currentLine.dispose();
-        currentLine = null;
-    }
-}
-
-// Функция для очистки только треугольника
-function clearTriangle() {
-    if (currentTriangle) {
-        currentTriangle.forEach(mesh => {
-            if (mesh.material) {
-                mesh.material.dispose();
-            }
-            mesh.dispose();
-        });
-        currentTriangle = null;
-    }
-}
-
-// Функция для вывода отладочных сообщений
-function debugLog(message) {
-    const debugDiv = document.getElementById('debugMessages');
-    if (debugDiv) {
-        const messageElement = document.createElement('div');
-        messageElement.textContent = message;
-        debugDiv.appendChild(messageElement);
-        debugDiv.scrollTop = debugDiv.scrollHeight;
-    }
-    console.log(message); // Также выводим в консоль для удобства
-}
+let allLines = [];
 
 // Функция для создания отрезка по введенным координатам
 window.createLineFromInputs = function () {
     // Очищаем только линию, если она есть
-    clearLine();
+    currentLine = clearLine(currentLine);
 
     // Получаем значения координат
     const x1 = parseFloat(document.getElementById("line_x1").value) || 0;
@@ -156,11 +38,11 @@ window.createLineFromInputs = function () {
     const z2 = parseFloat(document.getElementById("line_z2").value) || 0;
 
     // Создаем точки
-    const point1 = createPoint(new BABYLON.Vector3(x1, y1, z1));
-    const point2 = createPoint(new BABYLON.Vector3(x2, y2, z2));
+    const point1 = createPoint(new BABYLON.Vector3(x1, y1, z1), scene, currentPoints);
+    const point2 = createPoint(new BABYLON.Vector3(x2, y2, z2), scene, currentPoints);
 
     // Создаем линию
-    currentLine = createLine(point1, point2);
+    currentLine = createLine(point1, point2, scene, allLines);
 
     // Отключаем ввод для линии
     disableLineInputs();
@@ -170,7 +52,7 @@ window.createLineFromInputs = function () {
 window.createPlaneFromInputs = function () {
     try {
         // Очищаем только треугольник, если он есть
-        clearTriangle();
+        currentTriangle = clearTriangle(currentTriangle);
 
         // Получаем значения координат
         const x1 = parseFloat(document.getElementById("plane_x1").value) || 0;
@@ -184,12 +66,12 @@ window.createPlaneFromInputs = function () {
         const z3 = parseFloat(document.getElementById("plane_z3").value) || 0;
 
         // Создаем точки
-        const point1 = createPoint(new BABYLON.Vector3(x1, y1, z1));
-        const point2 = createPoint(new BABYLON.Vector3(x2, y2, z2));
-        const point3 = createPoint(new BABYLON.Vector3(x3, y3, z3));
+        const point1 = createPoint(new BABYLON.Vector3(x1, y1, z1), scene, currentPoints);
+        const point2 = createPoint(new BABYLON.Vector3(x2, y2, z2), scene, currentPoints);
+        const point3 = createPoint(new BABYLON.Vector3(x3, y3, z3), scene, currentPoints);
 
         // Создаем треугольник
-        currentTriangle = createTriangle(point1, point2, point3);
+        currentTriangle = createTriangle(point1, point2, point3, scene);
 
         // Отключаем ввод для треугольника
         disableTriangleInputs();
@@ -197,59 +79,6 @@ window.createPlaneFromInputs = function () {
         alert('Error creating triangle: ' + error.message);
     }
 };
-
-// Функции для управления состоянием элементов интерфейса
-function disableLineInputs() {
-    const lineInputs = ['line_x1', 'line_y1', 'line_z1', 'line_x2', 'line_y2', 'line_z2'];
-    lineInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.disabled = true;
-            input.style.backgroundColor = '#f0f0f0';
-        }
-    });
-    const button = document.querySelector('button[onclick="createLineFromInputs()"]');
-    if (button) {
-        button.disabled = true;
-        button.style.backgroundColor = '#cccccc';
-    }
-}
-
-function disableTriangleInputs() {
-    const triangleInputs = ['plane_x1', 'plane_y1', 'plane_z1', 'plane_x2', 'plane_y2', 'plane_z2', 'plane_x3', 'plane_y3', 'plane_z3'];
-    triangleInputs.forEach(id => {
-        const input = document.getElementById(id);
-        if (input) {
-            input.disabled = true;
-            input.style.backgroundColor = '#f0f0f0';
-        }
-    });
-    const button = document.querySelector('button[onclick="createPlaneFromInputs()"]');
-    if (button) {
-        button.disabled = true;
-        button.style.backgroundColor = '#cccccc';
-    }
-}
-
-function enableAllInputs() {
-    const allInputs = document.querySelectorAll('input[type="number"]');
-    allInputs.forEach(input => {
-        input.disabled = false;
-        input.style.backgroundColor = 'white';
-    });
-
-    const buttons = document.querySelectorAll('button');
-    buttons.forEach(button => {
-        if (button.id !== 'clearButton') {
-            button.disabled = false;
-            if (button.onclick.toString().includes('createLineFromInputs')) {
-                button.style.backgroundColor = '#4CAF50';
-            } else if (button.onclick.toString().includes('createPlaneFromInputs')) {
-                button.style.backgroundColor = '#4CAF50';
-            }
-        }
-    });
-}
 
 // Функция для очистки всех объектов в сцене
 window.clearScene = function () {
@@ -263,21 +92,10 @@ window.clearScene = function () {
     allLines = [];
 
     // Удаляем текущую линию
-    if (currentLine) {
-        currentLine.dispose();
-        currentLine = null;
-    }
+    currentLine = clearLine(currentLine);
 
     // Удаляем текущий треугольник
-    if (currentTriangle) {
-        currentTriangle.forEach(mesh => {
-            if (mesh.material) {
-                mesh.material.dispose();
-            }
-            mesh.dispose();
-        });
-        currentTriangle = null;
-    }
+    currentTriangle = clearTriangle(currentTriangle);
 
     // Удаляем все точки
     currentPoints.forEach(point => {
@@ -306,4 +124,4 @@ engine.runRenderLoop(function () {
 // Обработка изменения размера окна
 window.addEventListener("resize", function () {
     engine.resize();
-}); 
+});
