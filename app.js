@@ -288,6 +288,12 @@ window.clearScene = function () {
     });
     currentPoints = [];
 
+    // Очищаем все поля ввода
+    const allInputs = document.querySelectorAll('input[type="number"]');
+    allInputs.forEach(input => {
+        input.value = '';
+    });
+
     // Включаем все поля ввода
     enableAllInputs();
 };
