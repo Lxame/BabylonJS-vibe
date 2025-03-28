@@ -47,6 +47,7 @@ createAxes();
 let currentLine = null;
 let currentTriangle = null;
 let currentPoints = [];
+let allLines = []; // Добавляем массив для хранения всех линий
 
 // Функция для создания точки
 function createPoint(position) {
@@ -66,6 +67,7 @@ function createLine(point1, point2) {
         points: points,
         updatable: true
     }, scene);
+    allLines.push(lines); // Добавляем линию в массив
     return lines;
 }
 
@@ -144,6 +146,15 @@ window.createPlaneFromInputs = function () {
 
 // Функция для очистки всех объектов в сцене
 window.clearScene = function () {
+    // Удаляем все линии
+    allLines.forEach(line => {
+        if (line.material) {
+            line.material.dispose();
+        }
+        line.dispose();
+    });
+    allLines = [];
+
     // Удаляем текущую линию
     if (currentLine) {
         currentLine.dispose();
@@ -152,12 +163,20 @@ window.clearScene = function () {
 
     // Удаляем текущий треугольник
     if (currentTriangle) {
-        currentTriangle.forEach(mesh => mesh.dispose());
+        currentTriangle.forEach(mesh => {
+            if (mesh.material) {
+                mesh.material.dispose();
+            }
+            mesh.dispose();
+        });
         currentTriangle = null;
     }
 
     // Удаляем все точки
     currentPoints.forEach(point => {
+        if (point.material) {
+            point.material.dispose();
+        }
         point.dispose();
     });
     currentPoints = [];
