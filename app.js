@@ -13,7 +13,7 @@ light.intensity = 0.7;
 // Функция для создания координатных осей
 function createAxes() {
     const axisLength = 1;
-    
+
     // Создаем оси
     const xAxis = BABYLON.MeshBuilder.CreateLines("xAxis", {
         points: [
@@ -43,10 +43,10 @@ function createAxes() {
 // Создаем координатные оси
 createAxes();
 
-// Массив для хранения всех созданных линий, треугольников и точек
-let allLines = [];
-let allTriangles = [];
-let allPoints = [];
+// Переменные для хранения текущей линии и треугольника
+let currentLine = null;
+let currentTriangle = null;
+let currentPoints = [];
 
 // Функция для создания точки
 function createPoint(position) {
@@ -55,7 +55,7 @@ function createPoint(position) {
         segments: 16
     }, scene);
     sphere.position = position;
-    allPoints.push(sphere);
+    currentPoints.push(sphere);
     return sphere;
 }
 
@@ -75,7 +75,7 @@ function createTriangle(point1, point2, point3) {
     const line1 = createLine(point1, point2);
     const line2 = createLine(point2, point3);
     const line3 = createLine(point3, point1);
-    
+
     // Создаем закрашенный треугольник
     const polygon = BABYLON.MeshBuilder.CreatePolygon("triangle", {
         shape: [
@@ -92,12 +92,15 @@ function createTriangle(point1, point2, point3) {
     material.alpha = 0.5; // Полупрозрачность
     material.backFaceCulling = false;
     polygon.material = material;
-    
+
     return [line1, line2, line3, polygon];
 }
 
 // Функция для создания отрезка по введенным координатам
-window.createLineFromInputs = function() {
+window.createLineFromInputs = function () {
+    // Очищаем предыдущие объекты
+    clearScene();
+
     // Получаем значения координат
     const x1 = parseFloat(document.getElementById("line_x1").value) || 0;
     const y1 = parseFloat(document.getElementById("line_y1").value) || 0;
@@ -111,12 +114,14 @@ window.createLineFromInputs = function() {
     const point2 = createPoint(new BABYLON.Vector3(x2, y2, z2));
 
     // Создаем линию
-    const line = createLine(point1, point2);
-    allLines.push(line);
+    currentLine = createLine(point1, point2);
 };
 
 // Функция для создания треугольника по введенным координатам
-window.createPlaneFromInputs = function() {
+window.createPlaneFromInputs = function () {
+    // Очищаем предыдущие объекты
+    clearScene();
+
     // Получаем значения координат
     const x1 = parseFloat(document.getElementById("plane_x1").value) || 0;
     const y1 = parseFloat(document.getElementById("plane_y1").value) || 0;
@@ -134,37 +139,36 @@ window.createPlaneFromInputs = function() {
     const point3 = createPoint(new BABYLON.Vector3(x3, y3, z3));
 
     // Создаем треугольник
-    const triangle = createTriangle(point1, point2, point3);
-    allTriangles.push(triangle);
+    currentTriangle = createTriangle(point1, point2, point3);
 };
 
 // Функция для очистки всех объектов в сцене
-window.clearScene = function() {
-    // Удаляем все линии
-    allLines.forEach(line => {
-        line.dispose();
-    });
-    allLines = [];
+window.clearScene = function () {
+    // Удаляем текущую линию
+    if (currentLine) {
+        currentLine.dispose();
+        currentLine = null;
+    }
 
-    // Удаляем все треугольники
-    allTriangles.forEach(triangle => {
-        triangle.forEach(mesh => mesh.dispose());
-    });
-    allTriangles = [];
+    // Удаляем текущий треугольник
+    if (currentTriangle) {
+        currentTriangle.forEach(mesh => mesh.dispose());
+        currentTriangle = null;
+    }
 
     // Удаляем все точки
-    allPoints.forEach(point => {
+    currentPoints.forEach(point => {
         point.dispose();
     });
-    allPoints = [];
+    currentPoints = [];
 };
 
 // Запускаем рендер
-engine.runRenderLoop(function() {
+engine.runRenderLoop(function () {
     scene.render();
 });
 
 // Обработка изменения размера окна
-window.addEventListener("resize", function() {
+window.addEventListener("resize", function () {
     engine.resize();
 }); 
