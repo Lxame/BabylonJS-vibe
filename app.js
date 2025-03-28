@@ -74,14 +74,11 @@ function createLine(point1, point2) {
 // Функция для создания треугольника по трем точкам
 function createTriangle(point1, point2, point3) {
     try {
-        debugLog('Creating triangle lines...');
         // Создаем линии треугольника
         const line1 = createLine(point1, point2);
         const line2 = createLine(point2, point3);
         const line3 = createLine(point3, point1);
-        debugLog('Triangle lines created');
 
-        debugLog('Creating triangle mesh...');
         // Создаем треугольник с помощью CreateMesh
         const vertices = [
             point1.position.x, point1.position.y, point1.position.z,
@@ -98,20 +95,16 @@ function createTriangle(point1, point2, point3) {
         const polygon = new BABYLON.Mesh("triangle", scene);
         vertexData.applyToMesh(polygon);
         polygon.convertToUnIndexedMesh();
-        debugLog('Triangle mesh created');
 
-        debugLog('Creating triangle material...');
         // Создаем материал для треугольника
         const material = new BABYLON.StandardMaterial("triangleMaterial", scene);
         material.diffuseColor = new BABYLON.Color3(0.5, 0.8, 1.0); // Голубой цвет
         material.alpha = 0.5; // Полупрозрачность
         material.backFaceCulling = false;
         polygon.material = material;
-        debugLog('Triangle material created');
 
         return [line1, line2, line3, polygon];
     } catch (error) {
-        debugLog('Error creating triangle: ' + error.message);
         throw error; // Пробрасываем ошибку дальше
     }
 }
@@ -176,7 +169,6 @@ window.createLineFromInputs = function () {
 // Функция для создания треугольника по введенным координатам
 window.createPlaneFromInputs = function () {
     try {
-        debugLog('createPlaneFromInputs started');
         // Очищаем только треугольник, если он есть
         clearTriangle();
 
@@ -198,21 +190,16 @@ window.createPlaneFromInputs = function () {
 
         // Создаем треугольник
         currentTriangle = createTriangle(point1, point2, point3);
-        debugLog('Triangle created successfully');
 
-        debugLog('About to disable triangle inputs...');
         // Отключаем ввод для треугольника
         disableTriangleInputs();
-        debugLog('Triangle inputs disabled');
     } catch (error) {
-        debugLog('Error in createPlaneFromInputs: ' + error.message);
         alert('Error creating triangle: ' + error.message);
     }
 };
 
 // Функции для управления состоянием элементов интерфейса
 function disableLineInputs() {
-    debugLog('disableLineInputs started');
     const lineInputs = ['line_x1', 'line_y1', 'line_z1', 'line_x2', 'line_y2', 'line_z2'];
     lineInputs.forEach(id => {
         const input = document.getElementById(id);
@@ -222,7 +209,6 @@ function disableLineInputs() {
         }
     });
     const button = document.querySelector('button[onclick="createLineFromInputs()"]');
-    debugLog('Line button found: ' + (button ? 'yes' : 'no'));
     if (button) {
         button.disabled = true;
         button.style.backgroundColor = '#cccccc';
@@ -230,7 +216,6 @@ function disableLineInputs() {
 }
 
 function disableTriangleInputs() {
-    debugLog('disableTriangleInputs started');
     const triangleInputs = ['plane_x1', 'plane_y1', 'plane_z1', 'plane_x2', 'plane_y2', 'plane_z2', 'plane_x3', 'plane_y3', 'plane_z3'];
     triangleInputs.forEach(id => {
         const input = document.getElementById(id);
@@ -240,7 +225,6 @@ function disableTriangleInputs() {
         }
     });
     const button = document.querySelector('button[onclick="createPlaneFromInputs()"]');
-    debugLog('Triangle button found: ' + (button ? 'yes' : 'no'));
     if (button) {
         button.disabled = true;
         button.style.backgroundColor = '#cccccc';
