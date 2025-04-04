@@ -106,11 +106,12 @@ window.clearScene = function () {
     });
     currentPoints = [];
 
+    // Убрал, тк меня бесило
     // Очищаем все поля ввода
-    const allInputs = document.querySelectorAll('input[type="number"]');
-    allInputs.forEach(input => {
-        input.value = '';
-    });
+    // const allInputs = document.querySelectorAll('input[type="number"]');
+    // allInputs.forEach(input => {
+    //     input.value = '';
+    // });
 
     // Включаем все поля ввода
     enableAllInputs();
