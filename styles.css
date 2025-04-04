@@ -89,6 +89,10 @@ h3 {
     margin-bottom: 10px;
 }
 
+.buttons-container:last-child {
+    margin-bottom: 0;
+}
+
 input {
     width: 45px;
     margin: 0;
