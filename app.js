@@ -19,6 +19,8 @@ light.intensity = 0.7;
 createAxes(scene);
 
 // Переменные для хранения текущей линии и треугольника
+let linePoints = null;
+let trianglePoints = null;
 let currentLine = null;
 let currentTriangle = null;
 let currentPoints = [];
@@ -43,6 +45,8 @@ window.createLineFromInputs = function () {
 
     // Создаем линию
     currentLine = createLine(point1, point2, scene, allLines);
+    linePoints = [point1.position, point2.position];
+    // debugLog(currentLine);
 
     // Отключаем ввод для линии
     disableLineInputs();
@@ -72,7 +76,8 @@ window.createPlaneFromInputs = function () {
 
         // Создаем треугольник
         currentTriangle = createTriangle(point1, point2, point3, scene);
-
+        trianglePoints = [point1.position, point2.position, point3.position];
+        // debugLog(currentTriangle);
         // Отключаем ввод для треугольника
         disableTriangleInputs();
     } catch (error) {
@@ -82,8 +87,11 @@ window.createPlaneFromInputs = function () {
 
 window.checkIntersection = function () {
     try {
-        const intersection = checkLinePlaneIntersection(currentLine.start, currentLine.end, currentTriangle.points[0], currentTriangle.points[1], currentTriangle.points[2]);
-        console.log(intersection);
+        debugLog(linePoints);
+        debugLog(trianglePoints);
+        const intersection = checkLinePlaneIntersection(linePoints[0], linePoints[1], trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+        debugLog(intersection.message);
+        debugLog(intersection.point);
     } catch (error) {
         alert('Error checking intersection: ' + error.message);
     }
@@ -117,10 +125,10 @@ window.clearScene = function () {
 
     // Убрал, тк меня бесило
     // Очищаем все поля ввода
-    // const allInputs = document.querySelectorAll('input[type="number"]');
-    // allInputs.forEach(input => {
-    //     input.value = '';
-    // });
+    const allInputs = document.querySelectorAll('input[type="number"]');
+    allInputs.forEach(input => {
+        input.value = '';
+    });
 
     // Включаем все поля ввода
     enableAllInputs();
