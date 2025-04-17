@@ -105,6 +105,11 @@ window.checkIntersection = function () {
         sphere.material = new BABYLON.StandardMaterial("mat", scene);
         sphere.material.diffuseColor = BABYLON.Color3.Red()
 
+        if(sphere) {
+            camera.setTarget(sphere.position)
+            camera.radius = 20;
+        } 
+
     } catch (error) {
         alert('Error checking intersection: ' + error.message);
     }
@@ -136,7 +141,7 @@ window.clearScene = function () {
     });
     currentPoints = [];
 
-    // Убрал, тк меня бесило
+    // Добавил, тк бесило перевводить данные заново
     // Очищаем все поля ввода
     const allInputs = document.querySelectorAll('input[type="number"]');
     allInputs.forEach(input => {
