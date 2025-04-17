@@ -1,5 +1,5 @@
 import { createAxes } from './utils/axes.js';
-import { createPoint, createLine, createTriangle, clearLine, clearTriangle } from './utils/geometry.js';
+import { createPoint, createLine, createTriangle, clearLine, clearTriangle, checkLinePlaneIntersection } from './utils/geometry.js';
 import { debugLog } from './utils/debug.js';
 import { disableLineInputs, disableTriangleInputs, enableAllInputs } from './utils/ui.js';
 
@@ -79,6 +79,15 @@ window.createPlaneFromInputs = function () {
         alert('Error creating triangle: ' + error.message);
     }
 };
+
+window.checkIntersection = function () {
+    try {
+        const intersection = checkLinePlaneIntersection(currentLine.start, currentLine.end, currentTriangle.points[0], currentTriangle.points[1], currentTriangle.points[2]);
+        console.log(intersection);
+    } catch (error) {
+        alert('Error checking intersection: ' + error.message);
+    }
+}
 
 // Функция для очистки всех объектов в сцене
 window.clearScene = function () {
