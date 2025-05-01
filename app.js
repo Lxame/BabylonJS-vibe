@@ -45,7 +45,7 @@ window.createLineFromInputs = function () {
 
     // Создаем линию
     currentLine = createLine(point1, point2, scene, allLines);
-    linePoints = [point1.position, point2.position];
+    linePoints = [point1, point2];
     // debugLog(currentLine);
 
     // Отключаем ввод для линии
@@ -90,22 +90,23 @@ window.checkIntersection = function () {
     try {
         debugLog(linePoints);
         debugLog(trianglePoints);
-        const intersection = checkLinePlaneIntersection(linePoints[0], linePoints[1], trianglePoints[0], trianglePoints[1], trianglePoints[2]);
+        const intersection = checkLinePlaneIntersection(linePoints[0].position, linePoints[1].position, trianglePoints[0], trianglePoints[1], trianglePoints[2]);
         debugLog(intersection.message);
+        debugLog('intersection point is: ');
         debugLog(intersection.point);
 
+        if(intersection !== null) {
+            const position = new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z);
+            const sphere = createPoint(position, scene, currentPoints);
 
-        const position = new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z);
-        const sphere = createPoint(position, scene, currentPoints);
+            sphere.position = position;
+            sphere.material = new BABYLON.StandardMaterial("mat", scene);
+            sphere.material.diffuseColor = BABYLON.Color3.Red()
 
-        sphere.position = position;
-        sphere.material = new BABYLON.StandardMaterial("mat", scene);
-        sphere.material.diffuseColor = BABYLON.Color3.Red()
-
-        if(sphere) {
-            camera.setTarget(sphere.position)
+            camera.setTarget(sphere.position);
             camera.radius = 20;
-        } 
+        }
+
 
     } catch (error) {
         alert('Error checking intersection: ' + error.message);
