@@ -117,7 +117,7 @@ function clearScene (enable) {
     
         // Включаем все поля ввода
         if(enable) {
-            // enableAllInputs();
+            enableAllInputs();
         }
     }
     catch(err) {

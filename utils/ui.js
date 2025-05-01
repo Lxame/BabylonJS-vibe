@@ -40,7 +40,7 @@ export function enableAllInputs() {
 
     const buttons = document.querySelectorAll('button');
     buttons.forEach(button => {
-        if (button.id !== 'clearButton') {
+        if (button.id !== 'clearButton' && button.id !== 'clearInputsButton') {
             button.disabled = false;
             if (button.onclick.toString().includes('createLineFromInputs')) {
                 button.style.backgroundColor = '#4CAF50';
