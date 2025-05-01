@@ -141,16 +141,36 @@ window.clearScene = function () {
     });
     currentPoints = [];
 
-    // Добавил, тк бесило перевводить данные заново
-    // Очищаем все поля ввода
-    const allInputs = document.querySelectorAll('input[type="number"]');
-    allInputs.forEach(input => {
-        input.value = '';
-    });
 
     // Включаем все поля ввода
     enableAllInputs();
 };
+
+// Функция для очистки полей ввода
+function clearInputFields() {
+    // Очищаем поля ввода для отрезка
+    document.getElementById('line_x1').value = '';
+    document.getElementById('line_y1').value = '';
+    document.getElementById('line_z1').value = '';
+    document.getElementById('line_x2').value = '';
+    document.getElementById('line_y2').value = '';
+    document.getElementById('line_z2').value = '';
+    
+    // Очищаем поля ввода для треугольника
+    document.getElementById('plane_x1').value = '';
+    document.getElementById('plane_y1').value = '';
+    document.getElementById('plane_z1').value = '';
+    document.getElementById('plane_x2').value = '';
+    document.getElementById('plane_y2').value = '';
+    document.getElementById('plane_z2').value = '';
+    document.getElementById('plane_x3').value = '';
+    document.getElementById('plane_y3').value = '';
+    document.getElementById('plane_z3').value = '';
+}
+
+// Добавляем обработчики событий
+document.getElementById('clearButton').addEventListener('click', clearScene);
+document.getElementById('clearInputsButton').addEventListener('click', clearInputFields);
 
 // Запускаем рендер
 engine.runRenderLoop(function () {
