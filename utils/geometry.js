@@ -1,3 +1,4 @@
+
 // Функция для создания точки
 export function createPoint(position, scene, currentPoints) {
     const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
@@ -56,7 +57,7 @@ export function createTriangle(point1, point2, point3, scene) {
 
         return [line1, line2, line3, polygon];
     } catch (error) {
-        throw error;
+        debugLog(`CREAT TRIAG ERR IS ${error.stack}`)
     }
 }
 

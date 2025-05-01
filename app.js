@@ -117,7 +117,7 @@ function clearScene (enable) {
     
         // Включаем все поля ввода
         if(enable) {
-            enableAllInputs();
+            // enableAllInputs();
         }
     }
     catch(err) {
@@ -152,19 +152,16 @@ window.checkIntersection = function () {
 
             // Создаем новые линии от точек до пересечения
             const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
-            // const newLinePoint2 = createPoint(oldLinePoints[1].position, scene, currentPoints);
             currentLine = createLine(newLinePoint1, intersectionPoint, scene, allLines);
-            // createLine(newLinePoint2, intersectionPoint, scene, allLines);
 
-            // Создаем новый треугольник
-            const newTrianglePoint1 = createPoint(oldTrianglePoints[0], scene, currentPoints);
-            const newTrianglePoint2 = createPoint(oldTrianglePoints[1], scene, currentPoints);
-            const newTrianglePoint3 = createPoint(oldTrianglePoints[2], scene, currentPoints);
-            currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, newTrianglePoint3, scene);
+           // Создаем новый треугольник
+            const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
+            const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
+            currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, intersectionPoint, scene);
 
             // Обновляем переменные для хранения текущих точек
             linePoints = [newLinePoint1, intersectionPoint];
-            // trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, newTrianglePoint3.position];
+            trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, intersectionPoint.position];
 
             // Настраиваем камеру
             camera.setTarget(intersectionPoint.position);
