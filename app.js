@@ -96,10 +96,7 @@ window.checkIntersection = function () {
 
 
         const position = new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z);
-        const sphere = BABYLON.MeshBuilder.CreateSphere("sphere", {
-            diameter: 0.2,
-            segments: 16
-        }, scene);
+        const sphere = createPoint(position, scene, currentPoints);
 
         sphere.position = position;
         sphere.material = new BABYLON.StandardMaterial("mat", scene);
