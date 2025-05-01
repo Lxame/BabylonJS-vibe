@@ -86,6 +86,46 @@ window.createPlaneFromInputs = function () {
     }
 };
 
+
+// Функция для очистки всех объектов в сцене
+function clearScene (enable) {
+    // Удаляем все линии
+    try{ 
+        allLines.forEach(line => {
+            if (line.material) {
+                line.material.dispose();
+            }
+            line.dispose();
+        });
+        allLines = [];
+    
+        // Удаляем текущую линию
+        currentLine = clearLine(currentLine);
+    
+        // Удаляем текущий треугольник
+        currentTriangle = clearTriangle(currentTriangle);
+    
+        // Удаляем все точки
+        currentPoints.forEach(point => {
+            if (point.material) {
+                point.material.dispose();
+            }
+            point.dispose();
+        });
+        currentPoints = [];
+    
+    
+        // Включаем все поля ввода
+        if(enable) {
+            enableAllInputs();
+        }
+    }
+    catch(err) {
+        debugLog(err.stack);
+    }
+    
+};
+
 window.checkIntersection = function () {
     try {
         debugLog(linePoints);
@@ -95,54 +135,51 @@ window.checkIntersection = function () {
         debugLog('intersection point is: ');
         debugLog(intersection.point);
 
-        if(intersection !== null) {
-            const position = new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z);
-            const sphere = createPoint(position, scene, currentPoints);
+        if(intersection !== null ) {
+            // Сохраняем старые точки
+            const oldLinePoints = [...linePoints];
+            const oldTrianglePoints = [...trianglePoints];
 
-            sphere.position = position;
-            sphere.material = new BABYLON.StandardMaterial("mat", scene);
-            sphere.material.diffuseColor = BABYLON.Color3.Red()
+            // Очищаем сцену
+            debugLog(`INTER POINTS`)
+            clearScene(false);
+            debugLog(`INTER POINTS`)
 
-            camera.setTarget(sphere.position);
+            // Создаем точку пересечения
+            const intersectionPoint = createPoint(new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z), scene, currentPoints);
+            intersectionPoint.material = new BABYLON.StandardMaterial("intersectionMat", scene);
+            intersectionPoint.material.diffuseColor = BABYLON.Color3.Red();
+
+            // Создаем новые линии от точек до пересечения
+            const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
+            // const newLinePoint2 = createPoint(oldLinePoints[1].position, scene, currentPoints);
+            currentLine = createLine(newLinePoint1, intersectionPoint, scene, allLines);
+            // createLine(newLinePoint2, intersectionPoint, scene, allLines);
+
+            // Создаем новый треугольник
+            const newTrianglePoint1 = createPoint(oldTrianglePoints[0], scene, currentPoints);
+            const newTrianglePoint2 = createPoint(oldTrianglePoints[1], scene, currentPoints);
+            const newTrianglePoint3 = createPoint(oldTrianglePoints[2], scene, currentPoints);
+            currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, newTrianglePoint3, scene);
+
+            // Обновляем переменные для хранения текущих точек
+            linePoints = [newLinePoint1, intersectionPoint];
+            // trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, newTrianglePoint3.position];
+
+            // Настраиваем камеру
+            camera.setTarget(intersectionPoint.position);
             camera.radius = 20;
-        }
 
+            // Отключаем поля ввода
+            // disableLineInputs();
+            // disableTriangleInputs();
+        }
 
     } catch (error) {
         alert('Error checking intersection: ' + error.message);
     }
 }
 
-// Функция для очистки всех объектов в сцене
-window.clearScene = function () {
-    // Удаляем все линии
-    allLines.forEach(line => {
-        if (line.material) {
-            line.material.dispose();
-        }
-        line.dispose();
-    });
-    allLines = [];
-
-    // Удаляем текущую линию
-    currentLine = clearLine(currentLine);
-
-    // Удаляем текущий треугольник
-    currentTriangle = clearTriangle(currentTriangle);
-
-    // Удаляем все точки
-    currentPoints.forEach(point => {
-        if (point.material) {
-            point.material.dispose();
-        }
-        point.dispose();
-    });
-    currentPoints = [];
-
-
-    // Включаем все поля ввода
-    enableAllInputs();
-};
 
 // Функция для очистки полей ввода
 function clearInputFields() {
@@ -167,6 +204,7 @@ function clearInputFields() {
 }
 
 // Добавляем обработчики событий
+window.clearScene = clearScene(true);
 document.getElementById('clearButton').addEventListener('click', clearScene);
 document.getElementById('clearInputsButton').addEventListener('click', clearInputFields);
 
