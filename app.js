@@ -1,5 +1,5 @@
 import { createAxes } from './utils/axes.js';
-import { createPoint, createLine, createTriangle, clearLine, clearTriangle, checkLinePlaneIntersection } from './utils/geometry.js';
+import { createPoint, createLine, createTriangle, clearLine, clearTriangle, checkLinePlaneIntersection, distanceP2P } from './utils/geometry.js';
 import { debugLog } from './utils/debug.js';
 import { disableLineInputs, disableTriangleInputs, enableAllInputs } from './utils/ui.js';
 
@@ -23,6 +23,8 @@ let linePoints = null;
 let trianglePoints = null;
 let currentLine = null;
 let currentTriangle = null;
+let lineToPlane = null;
+let lineToPlanePoints = null;
 let currentPoints = [];
 let allLines = [];
 
@@ -134,38 +136,70 @@ window.checkIntersection = function () {
         debugLog(intersection.message);
         debugLog('intersection point is: ');
         debugLog(intersection.point);
+        debugLog(intersection.type);
 
-        if(intersection !== null ) {
+
+        if(intersection.point !== null) {
             // Сохраняем старые точки
             const oldLinePoints = [...linePoints];
             const oldTrianglePoints = [...trianglePoints];
 
             // Очищаем сцену
-            debugLog(`INTER POINTS`)
+            debugLog(`INTER POINTS`);
             clearScene(false);
-            debugLog(`INTER POINTS`)
 
             // Создаем точку пересечения
             const intersectionPoint = createPoint(new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z), scene, currentPoints);
             intersectionPoint.material = new BABYLON.StandardMaterial("intersectionMat", scene);
             intersectionPoint.material.diffuseColor = BABYLON.Color3.Red();
+            
+            if (intersection.type === 'intersects') {
+                const dist1 = distanceP2P(intersectionPoint, oldLinePoints[0]);
+                const dist2 = distanceP2P(intersectionPoint, oldLinePoints[1]);
+                debugLog(dist1);
+                debugLog(dist2);
+
+                if (dist1 > dist2) {
+                    lineToPlane = createLine(oldLinePoints[1], intersectionPoint, scene, allLines);
+                    lineToPlane.color = BABYLON.Color3.Purple();
+                    lineToPlanePoints = [oldLinePoints[1], intersectionPoint];
+                }
+                else {
+                    lineToPlane = createLine(oldLinePoints[0], intersectionPoint, scene, allLines);
+                    lineToPlane.color = BABYLON.Color3.Purple();
+                    lineToPlanePoints = [oldLinePoints[0], intersectionPoint];
+                }
+
+                currentLine = createLine(oldLinePoints[0], oldLinePoints[1], scene, allLines);
+                const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
+                const newLinePoint2 = createPoint(oldLinePoints[1].position, scene, currentPoints);
+
+                const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
+                const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
+                const newTrianglePoint3 = createPoint(new BABYLON.Vector3(oldTrianglePoints[2].x, oldTrianglePoints[2].y, oldTrianglePoints[2].z), scene, currentPoints);
+
+                currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, newTrianglePoint3, scene);
+                trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, newTrianglePoint3.position];
+            }
+            else if (intersection.type === 'intersects_outside') {
+                // TODO: правильно строить плоскость когда точка пересечения в нее не попадает
+            }
 
             // Создаем новые линии от точек до пересечения
-            const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
-            currentLine = createLine(newLinePoint1, intersectionPoint, scene, allLines);
+            // const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
+            // currentLine = createLine(newLinePoint1, intersectionPoint, scene, allLines);
 
-           // Создаем новый треугольник
-            const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
-            const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
-            currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, intersectionPoint, scene);
+            // Создаем новый треугольник
+            // const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
+            // const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
+            // currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, intersectionPoint, scene);
 
             // Обновляем переменные для хранения текущих точек
-            linePoints = [newLinePoint1, intersectionPoint];
-            trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, intersectionPoint.position];
+            // trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, intersectionPoint.position];
 
             // Настраиваем камеру
-            camera.setTarget(intersectionPoint.position);
-            camera.radius = 20;
+            // camera.setTarget(intersectionPoint.position);
+            // camera.radius = 20;
 
             // Отключаем поля ввода
             // disableLineInputs();
