@@ -25,7 +25,7 @@ export function createLine(point1, point2, scene, allLines = []) {
 }
 
 // Функция для создания треугольника по трем точкам
-export function createTriangle(point1, point2, point3, scene) {
+export function createTriangle(point1, point2, point3, scene, isExpanded = false) {
     try {
         // Создаем линии треугольника
         const line1 = createLine(point1, point2, scene);
@@ -51,7 +51,12 @@ export function createTriangle(point1, point2, point3, scene) {
 
         // Создаем материал для треугольника
         const material = new BABYLON.StandardMaterial("triangleMaterial", scene);
-        material.diffuseColor = new BABYLON.Color3(0.5, 0.8, 1.0);
+        if(isExpanded) {
+            material.diffuseColor = new BABYLON.Color3.Purple();
+        }
+        else {
+            material.diffuseColor = new BABYLON.Color3(0.5, 0.8, 1.0);
+        }
         material.alpha = 0.5;
         material.backFaceCulling = false;
         polygon.material = material;

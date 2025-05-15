@@ -196,7 +196,7 @@ window.checkIntersection = function () {
                                     { dist: distanceP2P(intersectionPoint, newTrianglePoint3), point: newTrianglePoint3} ];
                 distances.sort((a, b) => a.dist - b.dist);
 
-                additionalTriangle = createTriangle(intersectionPoint, distances[0].point, distances[1].point);
+                additionalTriangle = createTriangle(intersectionPoint, distances[0].point, distances[1].point, null, true);
             }
 
             // Настраиваем камеру
