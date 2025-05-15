@@ -117,7 +117,7 @@ function clearScene (enable) {
     
         // Включаем все поля ввода
         if(enable) {
-            // enableAllInputs();
+            enableAllInputs();
         }
     }
     catch(err) {
@@ -130,12 +130,19 @@ window.checkIntersection = function () {
     try {
         debugLog(linePoints);
         debugLog(trianglePoints);
+
+        // Проверка на наличие линии и треугольника
+        if (!linePoints || !trianglePoints) {
+            alert('Сначала необходимо создать линию и треугольник');
+            return;
+        }
+
         const intersection = checkLinePlaneIntersection(linePoints[0].position, linePoints[1].position, trianglePoints[0], trianglePoints[1], trianglePoints[2]);
         debugLog(intersection.message);
         debugLog('intersection point is: ');
         debugLog(intersection.point);
 
-        if(intersection !== null ) {
+        if (intersection !== null && intersection.point !== null && intersection.point !== undefined) {
             // Сохраняем старые точки
             const oldLinePoints = [...linePoints];
             const oldTrianglePoints = [...trianglePoints];
@@ -166,14 +173,13 @@ window.checkIntersection = function () {
             // Настраиваем камеру
             camera.setTarget(intersectionPoint.position);
             camera.radius = 20;
-
-            // Отключаем поля ввода
-            // disableLineInputs();
-            // disableTriangleInputs();
+        } else {
+            alert('Пересечение не найдено или линия параллельна плоскости: ' + intersection.message);
         }
 
     } catch (error) {
         alert('Error checking intersection: ' + error.message);
+        console.error(error);
     }
 }
 
@@ -201,8 +207,8 @@ function clearInputFields() {
 }
 
 // Добавляем обработчики событий
-window.clearScene = clearScene(true);
-document.getElementById('clearButton').addEventListener('click', clearScene);
+window.clearScene = function() { clearScene(true); };
+document.getElementById('clearButton').addEventListener('click', function() { clearScene(true); });
 document.getElementById('clearInputsButton').addEventListener('click', clearInputFields);
 
 // Запускаем рендер
