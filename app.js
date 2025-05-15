@@ -23,6 +23,7 @@ let linePoints = null;
 let trianglePoints = null;
 let currentLine = null;
 let currentTriangle = null;
+let additionalTriangle = null;
 let lineToPlane = null;
 let lineToPlanePoints = null;
 let currentPoints = [];
@@ -104,8 +105,9 @@ function clearScene (enable) {
         // Удаляем текущую линию
         currentLine = clearLine(currentLine);
     
-        // Удаляем текущий треугольник
+        // Удаляем треугольники
         currentTriangle = clearTriangle(currentTriangle);
+        additionalTriangle = clearTriangle(additionalTriangle);
     
         // Удаляем все точки
         currentPoints.forEach(point => {
@@ -153,49 +155,40 @@ window.checkIntersection = function () {
             intersectionPoint.material = new BABYLON.StandardMaterial("intersectionMat", scene);
             intersectionPoint.material.diffuseColor = BABYLON.Color3.Red();
             
-            if (intersection.type === 'intersects') {
-                const dist1 = distanceP2P(intersectionPoint, oldLinePoints[0]);
-                const dist2 = distanceP2P(intersectionPoint, oldLinePoints[1]);
-                debugLog(dist1);
-                debugLog(dist2);
+            const dist1 = distanceP2P(intersectionPoint, oldLinePoints[0]);
+            const dist2 = distanceP2P(intersectionPoint, oldLinePoints[1]);
 
-                if (dist1 > dist2) {
-                    lineToPlane = createLine(oldLinePoints[1], intersectionPoint, scene, allLines);
-                    lineToPlane.color = BABYLON.Color3.Purple();
-                    lineToPlanePoints = [oldLinePoints[1], intersectionPoint];
-                }
-                else {
-                    lineToPlane = createLine(oldLinePoints[0], intersectionPoint, scene, allLines);
-                    lineToPlane.color = BABYLON.Color3.Purple();
-                    lineToPlanePoints = [oldLinePoints[0], intersectionPoint];
-                }
-
-                currentLine = createLine(oldLinePoints[0], oldLinePoints[1], scene, allLines);
-                const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
-                const newLinePoint2 = createPoint(oldLinePoints[1].position, scene, currentPoints);
-
-                const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
-                const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
-                const newTrianglePoint3 = createPoint(new BABYLON.Vector3(oldTrianglePoints[2].x, oldTrianglePoints[2].y, oldTrianglePoints[2].z), scene, currentPoints);
-
-                currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, newTrianglePoint3, scene);
-                trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, newTrianglePoint3.position];
+            if (dist1 > dist2) {
+                lineToPlane = createLine(oldLinePoints[1], intersectionPoint, scene, allLines);
+                lineToPlane.color = BABYLON.Color3.Purple();
+                lineToPlanePoints = [oldLinePoints[1], intersectionPoint];
             }
-            else if (intersection.type === 'intersects_outside') {
-                // TODO: правильно строить плоскость когда точка пересечения в нее не попадает
+            else {
+                lineToPlane = createLine(oldLinePoints[0], intersectionPoint, scene, allLines);
+                lineToPlane.color = BABYLON.Color3.Purple();
+                lineToPlanePoints = [oldLinePoints[0], intersectionPoint];
             }
 
-            // Создаем новые линии от точек до пересечения
-            // const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
-            // currentLine = createLine(newLinePoint1, intersectionPoint, scene, allLines);
+            currentLine = createLine(oldLinePoints[0], oldLinePoints[1], scene, allLines);
+            const newLinePoint1 = createPoint(oldLinePoints[0].position, scene, currentPoints);
+            const newLinePoint2 = createPoint(oldLinePoints[1].position, scene, currentPoints);
 
-            // Создаем новый треугольник
-            // const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
-            // const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
-            // currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, intersectionPoint, scene);
+            const newTrianglePoint1 = createPoint(new BABYLON.Vector3(oldTrianglePoints[0].x, oldTrianglePoints[0].y, oldTrianglePoints[0].z), scene, currentPoints);
+            const newTrianglePoint2 = createPoint(new BABYLON.Vector3(oldTrianglePoints[1].x, oldTrianglePoints[1].y, oldTrianglePoints[1].z), scene, currentPoints);
+            const newTrianglePoint3 = createPoint(new BABYLON.Vector3(oldTrianglePoints[2].x, oldTrianglePoints[2].y, oldTrianglePoints[2].z), scene, currentPoints);
 
-            // Обновляем переменные для хранения текущих точек
-            // trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, intersectionPoint.position];
+            currentTriangle = createTriangle(newTrianglePoint1, newTrianglePoint2, newTrianglePoint3, scene);
+            trianglePoints = [newTrianglePoint1.position, newTrianglePoint2.position, newTrianglePoint3.position];
+            
+            if (intersection.type === 'intersects_outside') {
+                // достраиваем плоскость
+                const distances = [ { dist: distanceP2P(intersectionPoint, newTrianglePoint1), point: newTrianglePoint1},
+                                    { dist: distanceP2P(intersectionPoint, newTrianglePoint2), point: newTrianglePoint2},
+                                    { dist: distanceP2P(intersectionPoint, newTrianglePoint3), point: newTrianglePoint3} ];
+                distances.sort((a, b) => a.dist - b.dist);
+
+                additionalTriangle = createTriangle(intersectionPoint, distances[0].point, distances[1].point);
+            }
 
             // Настраиваем камеру
             // camera.setTarget(intersectionPoint.position);
