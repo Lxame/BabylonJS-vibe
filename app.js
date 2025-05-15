@@ -10,6 +10,8 @@ const scene = new BABYLON.Scene(engine);
 // Создаем камеру
 const camera = new BABYLON.ArcRotateCamera("camera", 0, Math.PI / 3, 10, BABYLON.Vector3.Zero(), scene);
 camera.attachControl(canvas, true);
+camera.inertia = 0.8; // Добавляем инерцию для более плавного движения камеры
+camera.panningSensibility = 1000; // Улучшаем чувствительность перемещения камеры
 
 // Добавляем освещение
 const light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(0, 1, 0), scene);
@@ -198,7 +200,7 @@ window.checkIntersection = function () {
             }
 
             // Настраиваем камеру
-            camera.setTarget(intersectionPoint.position);
+            camera.setTarget(new BABYLON.Vector3(intersection.point.x, intersection.point.y, intersection.point.z));
             camera.radius = 20;
         } else {
             alert('Пересечение не найдено или линия параллельна плоскости: ' + intersection.message);
